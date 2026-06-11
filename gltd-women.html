@@ -332,7 +332,7 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--text3);backgrou
   <div class="tb-right">
     <div class="strow"><div class="dot" id="status-dot"></div><span id="status-text" style="font-size:11px;color:rgba(245,239,228,0.45)">Not connected</span></div>
     <button onclick="refreshAll()" style="background:rgba(255,255,255,0.1);border:none;padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;color:rgba(245,239,228,0.7);font-family:inherit">&#8635;</button>
-    <a href="index.html" class="tb-home">&#8592; Home</a>
+    <a href="https://tresdias.github.io/kctd/" class="tb-home">&#8592; Home</a>
   </div>
 </div>
 
@@ -355,10 +355,7 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--text3);backgrou
       <div class="sb-sec">Communications</div>
       <button class="sb-btn" data-page="comms" id="snav-comms"><span class="sb-ic">&#128172;</span><span class="sb-lbl">Send Message</span></button>
       <button class="sb-btn" data-page="inbox" id="snav-inbox"><span class="sb-ic">&#128290;</span><span class="sb-lbl">Inbox</span><span class="sb-badge" id="inbox-badge" style="display:none">0</span></button>
-    </div>
-      <button class="sb-btn" data-page="admin"><span class="sb-ic"><i class="ti ti-settings" aria-hidden="true"></i></span><span class="sb-lbl">Admin</span></button>
-    </div>
-    <div class="sb-foot">
+      <button class="sb-btn" data-page="admin"><span class="sb-ic">&#9881;</span><span class="sb-lbl">Admin</span></button>
     </div>
   </aside>
   <main class="main-content" id="main-content">
@@ -1037,7 +1034,8 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--text3);backgrou
       <div class="step"><div class="stepn">2</div><p><strong>Publish each tab as CSV:</strong> File &rarr; Share &rarr; Publish to web &rarr; select the tab &rarr; choose <em>Comma-separated values (.csv)</em> &rarr; Publish &rarr; copy the URL &rarr; paste it above. Repeat for all 5 tabs.</p></div>
       <div class="step"><div class="stepn">3</div><p><strong>Edit the Settings tab</strong> to set your weekend title, verse, theme colors, venue info, fee amounts, payment links, and doc links. Every row is a <code>Key</code> + <code>Value</code> pair &mdash; just update the Value column.</p></div>
       <div class="step"><div class="stepn">4</div><p><strong>For photos:</strong> Upload to Google Drive &rarr; Share &rarr; &ldquo;Anyone with the link&rdquo; &rarr; copy the link &rarr; paste in the <code>Photo</code> column of the Roster tab. The app converts it automatically.</p></div>
-      <div class="step"><div class="stepn">5</div><p><strong>Share the Sheet</strong> with your leadership team as <em>Editor</em>. They edit rows directly &mdash; no app login required. Hit Refresh in the app to pull the latest changes immediately.</p></div>
+      <div class="step"><div class="stepn">5</div><p><strong>Make Sheet URLs work on every device:</strong> Open this HTML file in a text editor, find <code>HARDCODED</code> near the top of the &lt;script&gt;, and paste your published CSV URLs into <code>sheetSettings</code>, <code>sheetRoster</code>, etc. Save and re-upload to GitHub. Now every device automatically loads from the same Sheet — no manual setup needed.</p></div>
+      <div class="step"><div class="stepn">6</div><p><strong>Share the Sheet</strong> with your leadership team as <em>Editor</em>. They edit rows directly &mdash; no app login required. Hit Refresh in the app to pull the latest changes immediately.</p></div>
     </div>
 
     <div class="hintbox">
@@ -1081,7 +1079,7 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--text3);backgrou
 </body>
 </html  </main>
 </div>
-<footer id="footer-txt">GLTD Women &middot; Team Portal &mdash; <a href="index.html" style="color:var(--text3)">&#8592; Back to Hub</a></footer>
+<footer id="footer-txt">GLTD Women &middot; Team Portal &mdash; <a href="https://tresdias.github.io/kctd/" style="color:var(--text3)">&#8592; Back to Hub</a></footer>
 
 <div class="doc-overlay" id="doc-overlay" onclick="if(event.target===this)closeDoc()">
   <div class="doc-panel">
@@ -1167,7 +1165,7 @@ function applyWeekendInfo(info) {
     var sln=document.getElementById('sb-logo-nm'); if(sln) sln.textContent=grp;
     var bi=document.getElementById('brand-ic'); if(bi) bi.textContent=(info.group||'T')[0].toUpperCase();
     var sli=document.getElementById('sb-logo-ic'); if(sli) sli.textContent=(info.group||'T')[0].toUpperCase();
-    var ft=document.getElementById('footer-txt'); if(ft) ft.innerHTML=grp+' \u00B7 Team Portal &mdash; <a href="index.html" style="color:var(--text3)">\u2190 Back to Hub</a>';
+    var ft=document.getElementById('footer-txt'); if(ft) ft.innerHTML=grp+' \u00B7 Team Portal &mdash; <a href="https://tresdias.github.io/kctd/" style="color:var(--text3)">\u2190 Back to Hub</a>';
   }
   var wcard=document.getElementById('weekend-card');
   var hasWk=info.weekendName||info.title||info.rector;
@@ -1586,6 +1584,8 @@ async function refreshAll(){
 
 /* ── ADMIN SAVE/CLEAR ── */
 function saveUrls(){
+  // Note: if HARDCODED sheet URLs are set in the file, they override these.
+  // To make URLs permanent for all devices, set HARDCODED.sheetXxx in the file.
   KEYS.forEach(k=>{URLS[k]=document.getElementById('url-'+k).value.trim();localStorage.setItem('td_'+k,URLS[k]);});
   toast('URLs saved! Loading data\u2026');refreshAll();
 }
@@ -1813,14 +1813,24 @@ let COMMS = {
    Everyone who uses this file gets SMS + Gmail working
 ═══════════════════════════════════════════════════ */
 const HARDCODED = {
-  eztUser:       '',        // ← Your EZTexting username
-  eztPass:       '',        // ← Your EZTexting password
-  eztPhoneCol:   'Phone',   // ← Roster sheet column name with phone numbers
+  // ── SHEET URLS — fill these in so they work on every device automatically ──
+  sheetSettings: '',   // ← Settings sheet CSV URL
+  sheetRoster:   '',   // ← Roster sheet CSV URL
+  sheetMeetings: '',   // ← Meetings sheet CSV URL
+  sheetPrayer:   '',   // ← Prayer sheet CSV URL
+  sheetPalanca:  '',   // ← Palanca sheet CSV URL
+  sheetRightnow: '',   // ← Right Now sheet CSV URL
+  formPrayer:    '',   // ← Prayer Google Form URL
+  formPalanca:   '',   // ← Palanca Google Form URL
 
-  gmailFrom:     '',        // ← Shared Gmail address  e.g. tresdiasteam@gmail.com
-  gmailAppPass:  '',        // ← 16-char App Password  e.g. abcd efgh ijkl mnop
-  gmailEmailCol: 'Email',   // ← Roster sheet column name with email addresses
-  gmailProxy:    '',        // ← Your Apps Script proxy URL (see Setup Guide)
+  // ── SMS + EMAIL ──
+  eztUser:       '',
+  eztPass:       '',
+  eztPhoneCol:   'Phone',
+  gmailFrom:     '',
+  gmailAppPass:  '',
+  gmailEmailCol: 'Email',
+  gmailProxy:    '',
 };
 /* ═══════════════════════════════════════════════════ */
 /* ═══════════════════════════════════════════════════ */
