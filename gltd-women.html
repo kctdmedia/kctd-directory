@@ -292,6 +292,28 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--text3);backgrou
 .doc-panel-close:hover{background:var(--accent-light);color:var(--accent)}
 .doc-panel-loading{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text3);font-size:14px}
 .doc-panel-iframe{flex:1;border:none;width:100%;background:#fff}
+
+/* ── MEMBER POPUP ── */
+.member-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;align-items:flex-end;justify-content:center}
+.member-overlay.show{display:flex}
+.member-panel{background:var(--bg);width:100%;max-width:500px;border-radius:var(--r) var(--r) 0 0;overflow:hidden;animation:slideUp .28s cubic-bezier(.4,0,.2,1)}
+.member-panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:linear-gradient(135deg,var(--th-nav-bg),var(--th-heading));flex-shrink:0}
+.member-avatar{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.member-avatar img{width:100%;height:100%;object-fit:cover}
+.member-name{font-family:"Crimson Pro",Georgia,serif;font-size:20px;font-weight:600;color:#fff}
+.member-position{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px}
+.member-panel-body{padding:8px 0}
+.member-detail-row{display:flex;align-items:flex-start;gap:14px;padding:12px 18px;border-bottom:1px solid var(--bd)}
+.member-detail-row:last-child{border-bottom:none}
+.member-detail-ic{font-size:20px;flex-shrink:0;width:28px;text-align:center;margin-top:2px}
+.member-detail-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:2px}
+.member-detail-val{font-size:15px;color:var(--text)}
+.member-panel-footer{padding:14px 18px;border-top:1px solid var(--bd)}
+.roster-row-click{cursor:pointer}
+.roster-row-click:hover td{background:var(--accent-light) !important}
+.confirmed-yes{background:#E4EEE2;color:#2E6728;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.confirmed-no{background:#FFF3E0;color:#E65100;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.confirmed-pending{background:var(--bg3);color:var(--text3);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
 </style>
 </head>
 <body>
@@ -334,8 +356,9 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--text3);backgrou
       <button class="sb-btn" data-page="comms" id="snav-comms"><span class="sb-ic">&#128172;</span><span class="sb-lbl">Send Message</span></button>
       <button class="sb-btn" data-page="inbox" id="snav-inbox"><span class="sb-ic">&#128290;</span><span class="sb-lbl">Inbox</span><span class="sb-badge" id="inbox-badge" style="display:none">0</span></button>
     </div>
+      <button class="sb-btn" data-page="admin"><span class="sb-ic"><i class="ti ti-settings" aria-hidden="true"></i></span><span class="sb-lbl">Admin</span></button>
+    </div>
     <div class="sb-foot">
-      <button class="sb-btn" data-page="admin"><span class="sb-ic">&#9881;</span><span class="sb-lbl">Admin</span></button>
     </div>
   </aside>
   <main class="main-content" id="main-content">
@@ -397,50 +420,53 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--text3);backgrou
       </div>
     </div>
     <div class="ovw">
-      <div style="overflow-x:auto">
       <table>
-        <thead><tr><th>Photo</th><th>Name</th><th>Position</th><th>Church</th><th>City / State / Zip</th><th>Phone</th><th>Email</th></tr></thead>
-        <tbody id="roster-body"><tr><td colspan="7" class="empty">Connect your Google Sheet in Admin to load roster.</td></tr></tbody>
+        <thead><tr><th>Name</th><th>Position</th><th>Confirmed</th></tr></thead>
+        <tbody id="roster-body"><tr><td colspan="3" class="empty">Connect your Google Sheet in Admin to load roster.</td></tr></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Member detail popup -->
+  <div class="member-overlay" id="member-overlay" onclick="if(event.target===this)closeMember()">
+    <div class="member-panel">
+      <div class="member-panel-hdr">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="member-avatar" id="mp-avatar">?</div>
+          <div>
+            <div class="member-name" id="mp-name"></div>
+            <div class="member-position" id="mp-position"></div>
+          </div>
+        </div>
+        <button class="doc-panel-close" onclick="closeMember()">&#10005;</button>
+      </div>
+      <div class="member-panel-body">
+        <div class="member-detail-row" id="mp-church-row">
+          <span class="member-detail-ic">&#9962;</span>
+          <div><div class="member-detail-label">Church</div><div class="member-detail-val" id="mp-church"></div></div>
+        </div>
+        <div class="member-detail-row" id="mp-location-row">
+          <span class="member-detail-ic">&#128205;</span>
+          <div><div class="member-detail-label">City / State / Zip</div><div class="member-detail-val" id="mp-location"></div></div>
+        </div>
+        <div class="member-detail-row" id="mp-phone-row">
+          <span class="member-detail-ic">&#128241;</span>
+          <div><div class="member-detail-label">Phone</div><a class="member-detail-val" id="mp-phone" href="#" style="color:var(--accent);text-decoration:none"></a></div>
+        </div>
+        <div class="member-detail-row" id="mp-email-row">
+          <span class="member-detail-ic">&#128231;</span>
+          <div><div class="member-detail-label">Email</div><a class="member-detail-val" id="mp-email" href="#" style="color:var(--accent);text-decoration:none"></a></div>
+        </div>
+      </div>
+      <div class="member-panel-footer">
+        <div style="font-size:12px;color:var(--text3);line-height:1.5;background:var(--bg2);border-radius:var(--rs);padding:10px 14px">
+          <strong>To edit or remove a team member:</strong> update your Google Sheet directly — changes appear after the next Refresh. The sheet is the source of truth.
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- MEETINGS & TRAVEL -->
-<div id="page-meetings" class="page">
-  <div class="sec" style="margin-bottom:8px">
-    <div class="sechdr"><div class="sectitle">Team Meeting Schedule</div></div>
-    <div class="mtglist" id="mtg-list">
-      <div class="empty">Connect your Meetings sheet in Admin to load schedule.</div>
-    </div>
-  </div>
-
-  <div class="sec" style="margin-bottom:8px">
-    <div class="sectitle" style="margin-bottom:16px">Weekend Location</div>
-    <div class="lcard">
-      <div class="lsec">
-        <h4>&#128205; <span id="s-venue-name">Venue Name</span></h4>
-        <p id="s-venue-addr" style="white-space:pre-line"></p>
-        <a class="la" id="s-venue-map" href="#" target="_blank">Get Directions &#8599;</a>
-      </div>
-      <div class="ldiv"></div>
-      <div class="lsec">
-        <h4>&#9992;&#65039; Nearest Airports &amp; Travel</h4>
-        <ul id="s-airports"></ul>
-      </div>
-    </div>
-  </div>
-
-  <div class="sec">
-    <div class="sectitle" style="margin-bottom:16px">Registration &amp; Fees</div>
-    <div class="feegrid" id="fee-grid">
-      <div class="empty" style="grid-column:1/-1">Connect your Settings sheet in Admin to load fee information.</div>
-    </div>
-  </div>
-</div>
-
-<!-- PRAYER -->
 <div id="page-prayer" class="page">
   <div class="twocol">
     <div class="fcrd">
@@ -1304,7 +1330,7 @@ function applySettings(){
 
 
 
-const KEYS=['settings','roster','meetings','prayer','palanca','prayerform','palancaform'];
+const KEYS=['settings','roster','meetings','prayer','palanca','prayerform','palancaform','rightnow'];
 const URLS={};
 KEYS.forEach(k=>URLS[k]=localStorage.getItem('td_'+k)||'');
 let DATA={settings:{},roster:[],meetings:[],prayer:[],palanca:[]};
@@ -1343,6 +1369,33 @@ function updateFormLinks() {
   var pafInput = document.getElementById('url-palancaform');
   if (pfInput && pUrl) pfInput.value = pUrl;
   if (pafInput && paUrl) pafInput.value = paUrl;
+}
+
+
+function renderRightNow() {
+  var items = DATA['rightnow'] || [];
+  var rncard = document.getElementById('rightnow-card');
+  var rnbody = document.getElementById('rn-body');
+  if (!rncard || !rnbody) return;
+  // Filter to non-empty messages
+  var msgs = items.filter(function(r){
+    return (r['Message']||r['message']||'').trim();
+  });
+  if (!msgs.length) {
+    // Fall back to localStorage announcement
+    return;
+  }
+  rncard.style.display = 'block';
+  var icons = ['\uD83D\uDCC5','\uD83D\uDD14','\u26A0\uFE0F','\uD83D\uDCA1','\uD83D\uDCCC'];
+  rnbody.innerHTML = msgs.slice(0,5).map(function(r,i){
+    var msg = r['Message']||r['message']||'';
+    var date = r['Date']||r['date']||'';
+    return '<div class="rn-item">'+
+      '<div class="rn-item-ic">'+icons[i%icons.length]+'</div>'+
+      '<div><div class="rn-item-text">'+msg+'</div>'+
+      (date?'<div class="rn-item-sub">'+date+'</div>':'')+
+      '</div></div>';
+  }).join('');
 }
 
 /* ── NAV ── */
@@ -1394,23 +1447,58 @@ async function fetchSh(url){
 /* ── RENDER ROSTER ── */
 function renderRoster(){
   var tb=document.getElementById('roster-body');
-  if(!DATA.roster.length){tb.innerHTML='<tr><td colspan="7" class="empty">No roster data. Check your sheet URL and column headers.</td></tr>';return;}
-  var bg=['#E6EFE6','#F0E8DF','#E6EEF5','#F5E8E6'],fg=['#5A7A5C','#8B5E3C','#3A6080','#8B3A3A'];
+  if(!DATA.roster.length){tb.innerHTML='<tr><td colspan="3" class="empty">No roster data. Check your sheet URL and column headers.</td></tr>';return;}
   tb.innerHTML=DATA.roster.map(function(r,i){
-    var img=(typeof driveImg==='function'?driveImg:function(u){return u;})(r['Photo']||'');
-    var init=((r['Name']||'?').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2)||'?').toUpperCase();
-    var ci=i%4;
-    return '<tr>'+
-      '<td style="width:44px">'+(img?'<img src="'+img+'" class="avimg" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'inline-flex\'">'  :'')+
-      '<span class="avinit" style="'+(img?'display:none;':'')+'background:'+bg[ci]+';color:'+fg[ci]+'">'+init+'</span></td>'+
-      '<td style="font-weight:700;white-space:nowrap">'+( r['Name']||'')+'</td>'+
-      '<td style="color:var(--text2)">'+( r['Position']||r['Role']||'')+'</td>'+
-      '<td style="color:var(--text2)">'+( r['Church']||'')+'</td>'+
-      '<td style="color:var(--text2);font-size:13px">'+( r['City State Zip']||r['City']||'')+'</td>'+
-      '<td style="color:var(--text2);font-size:13px"><a href="tel:'+(r['Phone']||'')+'" style="color:inherit;text-decoration:none">'+( r['Phone']||'')+'</a></td>'+
-      '<td style="font-size:13px"><a href="mailto:'+(r['Email']||'')+'" style="color:var(--accent);text-decoration:none">'+( r['Email']||'')+'</a></td>'+
+    var confirmed=(r['Confirmed']||r['confirmed']||r['Status']||'').trim().toLowerCase();
+    var confBadge=confirmed==='yes'||confirmed==='confirmed'||confirmed==='y'
+      ?'<span class="confirmed-yes">&#10003; Confirmed</span>'
+      :confirmed==='no'||confirmed==='n'
+      ?'<span class="confirmed-no">Not confirmed</span>'
+      :'<span class="confirmed-pending">'+(r['Confirmed']||r['Status']||'Pending')+'</span>';
+    return '<tr class="roster-row-click" onclick="openMember('+i+')">'+
+      '<td style="font-weight:600">'+(r['Name']||'')+'</td>'+
+      '<td style="color:var(--text2)">'+(r['Position']||r['Role']||'')+'</td>'+
+      '<td>'+confBadge+'</td>'+
       '</tr>';
   }).join('');
+}
+
+function openMember(idx) {
+  var r = DATA.roster[idx];
+  if (!r) return;
+  var overlay = document.getElementById('member-overlay');
+  if (!overlay) return;
+
+  var img = typeof driveImg==='function' ? driveImg(r['Photo']||'') : '';
+  var init = ((r['Name']||'?').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2)||'?').toUpperCase();
+  var av = document.getElementById('mp-avatar');
+  if (av) {
+    if (img) av.innerHTML = '<img src="'+img+'" alt="" onerror="this.parentNode.textContent=\''+init+'\'">';
+    else av.textContent = init;
+  }
+
+  function setField(rowId, valId, val, href) {
+    var row=document.getElementById(rowId), el=document.getElementById(valId);
+    if(!row||!el) return;
+    if(val){row.style.display='flex';el.textContent=val;if(href)el.href=href;}
+    else{row.style.display='none';}
+  }
+
+  var nm=document.getElementById('mp-name'); if(nm) nm.textContent=r['Name']||'';
+  var pos=document.getElementById('mp-position'); if(pos) pos.textContent=r['Position']||r['Role']||'';
+  setField('mp-church-row','mp-church',r['Church']||'');
+  setField('mp-location-row','mp-location',r['City State Zip']||r['City']||'');
+  setField('mp-phone-row','mp-phone',r['Phone']||'','tel:'+(r['Phone']||'').replace(/\D/g,''));
+  setField('mp-email-row','mp-email',r['Email']||'','mailto:'+(r['Email']||''));
+
+  overlay.classList.add('show');
+  document.body.style.overflow='hidden';
+}
+
+function closeMember() {
+  var overlay=document.getElementById('member-overlay');
+  if(overlay) overlay.classList.remove('show');
+  document.body.style.overflow='';
 }
 
 /* ── RENDER MEETINGS ── */
@@ -2598,6 +2686,33 @@ function updateFormLinks() {
   var pafInput = document.getElementById('url-palancaform');
   if (pfInput && pUrl) pfInput.value = pUrl;
   if (pafInput && paUrl) pafInput.value = paUrl;
+}
+
+
+function renderRightNow() {
+  var items = DATA['rightnow'] || [];
+  var rncard = document.getElementById('rightnow-card');
+  var rnbody = document.getElementById('rn-body');
+  if (!rncard || !rnbody) return;
+  // Filter to non-empty messages
+  var msgs = items.filter(function(r){
+    return (r['Message']||r['message']||'').trim();
+  });
+  if (!msgs.length) {
+    // Fall back to localStorage announcement
+    return;
+  }
+  rncard.style.display = 'block';
+  var icons = ['\uD83D\uDCC5','\uD83D\uDD14','\u26A0\uFE0F','\uD83D\uDCA1','\uD83D\uDCCC'];
+  rnbody.innerHTML = msgs.slice(0,5).map(function(r,i){
+    var msg = r['Message']||r['message']||'';
+    var date = r['Date']||r['date']||'';
+    return '<div class="rn-item">'+
+      '<div class="rn-item-ic">'+icons[i%icons.length]+'</div>'+
+      '<div><div class="rn-item-text">'+msg+'</div>'+
+      (date?'<div class="rn-item-sub">'+date+'</div>':'')+
+      '</div></div>';
+  }).join('');
 }
 
 /* ── NAV ── */
